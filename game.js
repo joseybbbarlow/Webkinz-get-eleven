@@ -44,11 +44,11 @@ let timerInterval = null;
 
 preloadImages();
 
-// Create deck with more low cards (Webkinz is generous with aces and low numbers)
+// Create deck with more low cards
 function createDeck() {
     const deck = [];
     
-    // More 1s, 2s, 3s (8 of each instead of 5)
+    // More 1s, 2s, 3s (8 of each)
     for (let i = 0; i < 8; i++) {
         deck.push(1, 2, 3);
     }
@@ -78,119 +78,140 @@ function getTimeForLevel(level) {
     return Math.max(60, 148 - ((level - 1) * 8));
 }
 
-// Setup three pyramids (Left: 1,2,3,2,1  Middle: 1,2,1  Right: 1,2,3,2,1)
+// Setup three pyramids with covering information
 function setupPyramids() {
     let cardIndex = 0;
     const deck = gameState.deck;
     
     // Left pyramid (1,2,3,2,1 = 9 cards)
+    // Each card knows which cards cover it
     const leftPyramid = [
-        [{value: deck[cardIndex++], row: 0, col: 0, pyramid: 'left', removed: false}],
-        [{value: deck[cardIndex++], row: 1, col: 0, pyramid: 'left', removed: false},
-         {value: deck[cardIndex++], row: 1, col: 1, pyramid: 'left', removed: false}],
-        [{value: deck[cardIndex++], row: 2, col: 0, pyramid: 'left', removed: false},
-         {value: deck[cardIndex++], row: 2, col: 1, pyramid: 'left', removed: false},
-         {value: deck[cardIndex++], row: 2, col: 2, pyramid: 'left', removed: false}],
-        [{value: deck[cardIndex++], row: 3, col: 0, pyramid: 'left', removed: false},
-         {value: deck[cardIndex++], row: 3, col: 1, pyramid: 'left', removed: false}],
-        [{value: deck[cardIndex++], row: 4, col: 0, pyramid: 'left', removed: false}]
+        // Row 0 - covered by row 1 col 0 and 1
+        [{value: deck[cardIndex++], row: 0, col: 0, pyramid: 'left', removed: false, 
+          coveredBy: [{row:1, col:0}, {row:1, col:1}]}],
+        // Row 1 - covered by row 2
+        [{value: deck[cardIndex++], row: 1, col: 0, pyramid: 'left', removed: false,
+          coveredBy: [{row:2, col:0}, {row:2, col:1}]},
+         {value: deck[cardIndex++], row: 1, col: 1, pyramid: 'left', removed: false,
+          coveredBy: [{row:2, col:1}, {row:2, col:2}]}],
+        // Row 2 - covered by row 3
+        [{value: deck[cardIndex++], row: 2, col: 0, pyramid: 'left', removed: false,
+          coveredBy: [{row:3, col:0}]},
+         {value: deck[cardIndex++], row: 2, col: 1, pyramid: 'left', removed: false,
+          coveredBy: [{row:3, col:0}, {row:3, col:1}]},
+         {value: deck[cardIndex++], row: 2, col: 2, pyramid: 'left', removed: false,
+          coveredBy: [{row:3, col:1}]}],
+        // Row 3 - covered by row 4
+        [{value: deck[cardIndex++], row: 3, col: 0, pyramid: 'left', removed: false,
+          coveredBy: [{row:4, col:0}]},
+         {value: deck[cardIndex++], row: 3, col: 1, pyramid: 'left', removed: false,
+          coveredBy: [{row:4, col:0}]}],
+        // Row 4 - bottom, not covered
+        [{value: deck[cardIndex++], row: 4, col: 0, pyramid: 'left', removed: false,
+          coveredBy: []}]
     ];
     
-    // Middle pyramid (1,2,1 = 4 cards) - row 1 is locked initially
+    // Middle pyramid (1,2,1 = 4 cards)
     const middlePyramid = [
-        [{value: deck[cardIndex++], row: 0, col: 0, pyramid: 'middle', removed: false}],
-        [{value: deck[cardIndex++], row: 1, col: 0, pyramid: 'middle', removed: false},
-         {value: deck[cardIndex++], row: 1, col: 1, pyramid: 'middle', removed: false}],
-        [{value: deck[cardIndex++], row: 2, col: 0, pyramid: 'middle', removed: false}]
+        // Row 0 - top, covered by row 1
+        [{value: deck[cardIndex++], row: 0, col: 0, pyramid: 'middle', removed: false,
+          coveredBy: [{row:1, col:0}, {row:1, col:1}]}],
+        // Row 1 - middle, covered by row 2, LOCKED initially
+        [{value: deck[cardIndex++], row: 1, col: 0, pyramid: 'middle', removed: false,
+          coveredBy: [{row:2, col:0}], locked: true},
+         {value: deck[cardIndex++], row: 1, col: 1, pyramid: 'middle', removed: false,
+          coveredBy: [{row:2, col:0}], locked: true}],
+        // Row 2 - bottom, ALWAYS AVAILABLE
+        [{value: deck[cardIndex++], row: 2, col: 0, pyramid: 'middle', removed: false,
+          coveredBy: []}]
     ];
     
     // Right pyramid (1,2,3,2,1 = 9 cards)
     const rightPyramid = [
-        [{value: deck[cardIndex++], row: 0, col: 0, pyramid: 'right', removed: false}],
-        [{value: deck[cardIndex++], row: 1, col: 0, pyramid: 'right', removed: false},
-         {value: deck[cardIndex++], row: 1, col: 1, pyramid: 'right', removed: false}],
-        [{value: deck[cardIndex++], row: 2, col: 0, pyramid: 'right', removed: false},
-         {value: deck[cardIndex++], row: 2, col: 1, pyramid: 'right', removed: false},
-         {value: deck[cardIndex++], row: 2, col: 2, pyramid: 'right', removed: false}],
-        [{value: deck[cardIndex++], row: 3, col: 0, pyramid: 'right', removed: false},
-         {value: deck[cardIndex++], row: 3, col: 1, pyramid: 'right', removed: false}],
-        [{value: deck[cardIndex++], row: 4, col: 0, pyramid: 'right', removed: false}]
+        [{value: deck[cardIndex++], row: 0, col: 0, pyramid: 'right', removed: false,
+          coveredBy: [{row:1, col:0}, {row:1, col:1}]}],
+        [{value: deck[cardIndex++], row: 1, col: 0, pyramid: 'right', removed: false,
+          coveredBy: [{row:2, col:0}, {row:2, col:1}]},
+         {value: deck[cardIndex++], row: 1, col: 1, pyramid: 'right', removed: false,
+          coveredBy: [{row:2, col:1}, {row:2, col:2}]}],
+        [{value: deck[cardIndex++], row: 2, col: 0, pyramid: 'right', removed: false,
+          coveredBy: [{row:3, col:0}]},
+         {value: deck[cardIndex++], row: 2, col: 1, pyramid: 'right', removed: false,
+          coveredBy: [{row:3, col:0}, {row:3, col:1}]},
+         {value: deck[cardIndex++], row: 2, col: 2, pyramid: 'right', removed: false,
+          coveredBy: [{row:3, col:1}]}],
+        [{value: deck[cardIndex++], row: 3, col: 0, pyramid: 'right', removed: false,
+          coveredBy: [{row:4, col:0}]},
+         {value: deck[cardIndex++], row: 3, col: 1, pyramid: 'right', removed: false,
+          coveredBy: [{row:4, col:0}]}],
+        [{value: deck[cardIndex++], row: 4, col: 0, pyramid: 'right', removed: false,
+          coveredBy: []}]
     ];
     
-    // Remaining cards go to deck (should be 29 cards left)
+    // Remaining cards go to deck
     gameState.deck = deck.slice(cardIndex);
     
     return { leftPyramid, middlePyramid, rightPyramid };
 }
 
-function updateAvailability() {
-    // Left pyramid availability
-    gameState.leftPyramid.forEach((row, rowIndex) => {
-        row.forEach((card, colIndex) => {
-            if (!card.removed) {
-                card.available = isCardAvailable(gameState.leftPyramid, rowIndex, colIndex);
-            }
-        });
-    });
-    
-    // Middle pyramid availability
-    // Row 0 (top): available if not covered by row 1
-    // Row 1 (middle): LOCKED until unlock condition
-    // Row 2 (bottom): ALWAYS available from start!
-    const middleRow1Unlocked = isMiddleRow1Unlocked();
-    
-    gameState.middlePyramid.forEach((row, rowIndex) => {
-        row.forEach((card, colIndex) => {
-            if (!card.removed) {
-                if (rowIndex === 1 && !middleRow1Unlocked) {
-                    // Row 1 is locked
-                    card.available = false;
-                } else if (rowIndex === 2) {
-                    // Bottom card always available
-                    card.available = true;
-                } else {
-                    // Row 0 - check normal availability
-                    card.available = isCardAvailable(gameState.middlePyramid, rowIndex, colIndex);
-                }
-            }
-        });
-    });
-    
-    // Right pyramid availability
-    gameState.rightPyramid.forEach((row, rowIndex) => {
-        row.forEach((card, colIndex) => {
-            if (!card.removed) {
-                card.available = isCardAvailable(gameState.rightPyramid, rowIndex, colIndex);
-            }
-        });
-    });
-}
-
+// Check if middle row 1 should be unlocked
 function isMiddleRow1Unlocked() {
-    // Middle row 1 unlocks when the closest internal card from row of 3 in left or right is cleared
-    // Left pyramid row 2 col 2 (rightmost of the 3-row)
-    const leftInternal = gameState.leftPyramid[2][2];
-    // Right pyramid row 2 col 0 (leftmost of the 3-row)
-    const rightInternal = gameState.rightPyramid[2][0];
+    // Unlocks when innermost card from left OR right 3-row is cleared
+    const leftInner = gameState.leftPyramid[2][2]; // rightmost of left 3-row
+    const rightInner = gameState.rightPyramid[2][0]; // leftmost of right 3-row
     
-    return leftInternal.removed || rightInternal.removed;
+    return leftInner.removed || rightInner.removed;
 }
 
-function isCardAvailable(pyramid, row, col) {
-    const card = pyramid[row][col];
+// Check if a card is available (all covering cards removed)
+function isCardAvailable(pyramid, card) {
     if (card.removed) return false;
     
-    // Bottom row is always available
-    if (row === pyramid.length - 1) return true;
+    // Middle pyramid row 1 special case
+    if (card.pyramid === 'middle' && card.row === 1 && card.locked) {
+        if (!isMiddleRow1Unlocked()) return false;
+        // Unlock the cards
+        card.locked = false;
+    }
     
-    // Check if cards below are covering this card
-    const nextRow = pyramid[row + 1];
-    if (!nextRow) return true;
+    // Check if all covering cards are removed
+    for (let cover of card.coveredBy) {
+        const coveringCard = pyramid[cover.row][cover.col];
+        if (!coveringCard.removed) {
+            return false;
+        }
+    }
     
-    const leftCovered = nextRow[col] && !nextRow[col].removed;
-    const rightCovered = nextRow[col + 1] && !nextRow[col + 1].removed;
+    return true;
+}
+
+function updateAvailability() {
+    // Check middle unlock first
+    const middleUnlocked = isMiddleRow1Unlocked();
+    if (middleUnlocked) {
+        gameState.middlePyramid[1].forEach(card => card.locked = false);
+    }
     
-    return !leftCovered && !rightCovered;
+    // Update left pyramid
+    gameState.leftPyramid.forEach(row => {
+        row.forEach(card => {
+            card.available = isCardAvailable(gameState.leftPyramid, card);
+        });
+    });
+    
+    // Update middle pyramid
+    gameState.middlePyramid.forEach(row => {
+        row.forEach(card => {
+            card.available = isCardAvailable(gameState.middlePyramid, card);
+        });
+    });
+    
+    // Update right pyramid
+    gameState.rightPyramid.forEach(row => {
+        row.forEach(card => {
+            card.available = isCardAvailable(gameState.rightPyramid, card);
+        });
+    });
 }
 
 // Rendering
@@ -198,21 +219,21 @@ function renderPyramids() {
     const container = document.getElementById('pyramidsContainer');
     container.innerHTML = '';
     
-    // Render left pyramid
-    const leftDiv = document.createElement('div');
-    leftDiv.className = 'pyramid';
-    renderPyramid(gameState.leftPyramid, leftDiv, 'left');
-    container.appendChild(leftDiv);
-    
-    // Render middle pyramid
+    // Render middle pyramid first (highest, in back)
     const middleDiv = document.createElement('div');
-    middleDiv.className = 'pyramid';
+    middleDiv.className = 'pyramid middle';
     renderPyramid(gameState.middlePyramid, middleDiv, 'middle');
     container.appendChild(middleDiv);
     
+    // Render left pyramid
+    const leftDiv = document.createElement('div');
+    leftDiv.className = 'pyramid left';
+    renderPyramid(gameState.leftPyramid, leftDiv, 'left');
+    container.appendChild(leftDiv);
+    
     // Render right pyramid
     const rightDiv = document.createElement('div');
-    rightDiv.className = 'pyramid';
+    rightDiv.className = 'pyramid right';
     renderPyramid(gameState.rightPyramid, rightDiv, 'right');
     container.appendChild(rightDiv);
 }
@@ -353,7 +374,7 @@ function drawCard() {
     
     // If there's already a drawn card, put it back
     if (gameState.drawnCard !== null) {
-        // Try to find an empty spot in pyramids
+        // Try to find highest empty spot
         const emptySpot = findEmptySpot();
         if (emptySpot) {
             // Place old drawn card in empty spot
@@ -362,14 +383,9 @@ function drawCard() {
             else if (emptySpot.pyramid === 'middle') pyramid = gameState.middlePyramid;
             else pyramid = gameState.rightPyramid;
             
-            pyramid[emptySpot.row][emptySpot.col] = {
-                value: gameState.drawnCard,
-                row: emptySpot.row,
-                col: emptySpot.col,
-                pyramid: emptySpot.pyramid,
-                removed: false,
-                available: false
-            };
+            const oldCard = pyramid[emptySpot.row][emptySpot.col];
+            oldCard.value = gameState.drawnCard;
+            oldCard.removed = false;
         } else {
             // No empty spots - put card back in deck at bottom
             gameState.deck.push(gameState.drawnCard);
@@ -388,14 +404,13 @@ function drawCard() {
 }
 
 function findEmptySpot() {
-    // Look for removed cards in all pyramids, prioritizing HIGHEST rows (row 0 first)
+    // Search from top rows (row 0) to bottom rows - HIGHEST priority
     const pyramids = [
         {name: 'left', pyramid: gameState.leftPyramid},
         {name: 'middle', pyramid: gameState.middlePyramid},
         {name: 'right', pyramid: gameState.rightPyramid}
     ];
     
-    // Search from top rows (row 0) to bottom rows
     for (let p of pyramids) {
         for (let row = 0; row < p.pyramid.length; row++) {
             for (let col = 0; col < p.pyramid[row].length; col++) {
@@ -489,12 +504,10 @@ function hasMovesAvailable() {
     
     if (availableCards.length === 0) return false;
     
-    // Check all combinations up to 5 cards
     return checkCombinations(availableCards, 11);
 }
 
 function checkCombinations(cards, target) {
-    // Check if any combination of cards sums to target
     for (let size = 2; size <= Math.min(5, cards.length); size++) {
         if (hasCombination(cards, target, size)) return true;
     }
@@ -530,6 +543,7 @@ function checkMovesAvailable() {
 function updateStats() {
     document.getElementById('score').textContent = gameState.score;
     document.getElementById('level').textContent = gameState.level;
+    document.getElementById('w').textContent = '0'; // Placeholder for W
 }
 
 function startTimer() {
@@ -594,7 +608,7 @@ function nextLevel() {
     gameState.selected = [];
     gameState.combo = 0;
     gameState.drawnCard = null;
-    gameState.bonusCards = []; // Bonus cards disappear between levels
+    gameState.bonusCards = [];
     
     updateAvailability();
     renderPyramids();
