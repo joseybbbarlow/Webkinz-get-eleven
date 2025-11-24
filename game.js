@@ -404,7 +404,8 @@ function drawCard() {
 }
 
 function findEmptySpot() {
-    // Search from top rows (row 0) to bottom rows - HIGHEST priority
+    // Get all empty spots
+    const emptySpots = [];
     const pyramids = [
         {name: 'left', pyramid: gameState.leftPyramid},
         {name: 'middle', pyramid: gameState.middlePyramid},
@@ -415,13 +416,67 @@ function findEmptySpot() {
         for (let row = 0; row < p.pyramid.length; row++) {
             for (let col = 0; col < p.pyramid[row].length; col++) {
                 if (p.pyramid[row][col].removed) {
-                    return {pyramid: p.name, row, col};
+                    emptySpots.push({pyramid: p.name, row, col});
                 }
             }
         }
     }
     
-    return null;
+    if (emptySpots.length === 0) return null;
+    
+    // Filter for spots that don't cover any cards
+    const uncoveringSpots = emptySpots.filter(spot => !coversAnyCard(spot));
+    
+    // If we have uncovering spots, return the topmost one (highest priority = lowest row)
+    if (uncoveringSpots.length > 0) {
+        // Sort by row (ascending), then by pyramid order, then by col
+        uncoveringSpots.sort((a, b) => {
+            if (a.row !== b.row) return a.row - b.row;
+            const pyramidOrder = {left: 0, middle: 1, right: 2};
+            if (pyramidOrder[a.pyramid] !== pyramidOrder[b.pyramid]) {
+                return pyramidOrder[a.pyramid] - pyramidOrder[b.pyramid];
+            }
+            return a.col - b.col;
+        });
+        return uncoveringSpots[0];
+    }
+    
+    // Otherwise, return the topmost covering spot as fallback
+    emptySpots.sort((a, b) => {
+        if (a.row !== b.row) return a.row - b.row;
+        const pyramidOrder = {left: 0, middle: 1, right: 2};
+        if (pyramidOrder[a.pyramid] !== pyramidOrder[b.pyramid]) {
+            return pyramidOrder[a.pyramid] - pyramidOrder[b.pyramid];
+        }
+        return a.col - b.col;
+    });
+    
+    return emptySpots[0];
+}
+
+function coversAnyCard(emptySpot) {
+    // Determine which pyramid we're in
+    let pyramid;
+    if (emptySpot.pyramid === 'left') pyramid = gameState.leftPyramid;
+    else if (emptySpot.pyramid === 'middle') pyramid = gameState.middlePyramid;
+    else pyramid = gameState.rightPyramid;
+    
+    // Check if any card lists this empty spot in their coveredBy array
+    for (let row = 0; row < pyramid.length; row++) {
+        for (let col = 0; col < pyramid[row].length; col++) {
+            const card = pyramid[row][col];
+            // If the card is not removed, check if it's covered by this spot
+            if (!card.removed) {
+                for (let coverSpot of card.coveredBy) {
+                    if (coverSpot.row === emptySpot.row && coverSpot.col === emptySpot.col) {
+                        return true; // This empty spot covers an active card
+                    }
+                }
+            }
+        }
+    }
+    
+    return false;
 }
 
 function renderDrawnCard() {
