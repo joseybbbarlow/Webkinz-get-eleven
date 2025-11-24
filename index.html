@@ -14,52 +14,83 @@
 
         body {
             font-family: 'Arial Black', Arial, sans-serif;
-            background: linear-gradient(to bottom, #87CEEB 0%, #98D8C8 50%, #90EE90 100%);
+            background: linear-gradient(to bottom, 
+                #87CEEB 0%, 
+                #87CEEB 40%,
+                #90EE90 70%,
+                #228B22 100%);
             overflow: hidden;
             position: fixed;
             width: 100%;
             height: 100%;
         }
 
+        /* Decorative trees */
+        .tree-left, .tree-right {
+            position: fixed;
+            bottom: 0;
+            width: 80px;
+            height: 120px;
+            z-index: 1;
+        }
+
+        .tree-left {
+            left: 10px;
+            background: linear-gradient(to bottom, transparent 30%, #228B22 30%, #1a6b1a 100%);
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        }
+
+        .tree-right {
+            right: 10px;
+            background: linear-gradient(to bottom, transparent 30%, #228B22 30%, #1a6b1a 100%);
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        }
+
         .game-container {
             display: grid;
-            grid-template-rows: auto 1fr auto;
+            grid-template-rows: auto 1fr;
             height: 100vh;
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 5px;
+            position: relative;
+            z-index: 2;
         }
 
         /* Top Bar */
         .top-bar {
             background: linear-gradient(to bottom, #FFD700 0%, #FFA500 100%);
-            padding: 8px 15px;
-            border-radius: 10px;
+            padding: 10px 15px;
+            border-radius: 15px;
+            border: 3px solid #333;
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 10px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
-            margin-bottom: 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            margin-bottom: 8px;
         }
 
         .stat-box {
             background: white;
-            padding: 5px;
-            border-radius: 8px;
+            padding: 8px;
+            border-radius: 10px;
             text-align: center;
-            border: 2px solid #333;
+            border: 3px solid #333;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
         }
 
         .stat-label {
-            font-size: 0.7em;
+            font-size: 0.9em;
             font-weight: bold;
-            color: #333;
+            color: #000;
+            text-shadow: none;
         }
 
         .stat-value {
-            font-size: 1.3em;
+            font-size: 1.5em;
             font-weight: bold;
             color: #000;
+            text-shadow: none;
         }
 
         .stat-value.warning {
@@ -76,52 +107,80 @@
         .play-area {
             display: grid;
             grid-template-columns: 1fr auto;
-            gap: 5px;
+            gap: 10px;
             overflow: hidden;
         }
 
-        /* Game Board with Three Pyramids */
+        /* Game Board */
         .game-board {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            padding: 10px;
+            position: relative;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            padding: 20px;
         }
 
+        /* Pyramids Container - overlapping layout */
         .pyramids-container {
-            display: flex;
-            gap: 10px;
-            align-items: flex-end;
-            margin-bottom: 15px;
-            justify-content: center;
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 400px;
+            margin-bottom: 20px;
         }
 
         .pyramid {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            position: absolute;
+        }
+
+        /* Middle pyramid - positioned highest */
+        .pyramid.middle {
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Left pyramid - positioned lower, overlaps with middle */
+        .pyramid.left {
+            top: 60px;
+            left: 5%;
+        }
+
+        /* Right pyramid - positioned lower, overlaps with middle */
+        .pyramid.right {
+            top: 60px;
+            right: 5%;
         }
 
         .pyramid-row {
+            position: relative;
             display: flex;
-            gap: 3px;
-            margin: 2px 0;
+            justify-content: center;
+            margin-bottom: -35px; /* Overlap cards vertically */
         }
 
-        /* Cards - BIGGER! */
+        /* Cards - overlapping style */
         .card {
-            width: 60px;
-            height: 84px;
+            width: 70px;
+            height: 98px;
             cursor: pointer;
-            transition: all 0.15s;
-            border-radius: 6px;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+            transition: all 0.2s;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             background-size: cover;
             background-position: center;
             position: relative;
+            margin: 0 -15px; /* Overlap cards horizontally */
+            border: 3px solid #1E90FF;
+        }
+
+        .card:first-child {
+            margin-left: 0;
+        }
+
+        .card:last-child {
+            margin-right: 0;
         }
 
         .card:active {
@@ -129,16 +188,16 @@
         }
 
         .card.selected {
-            transform: scale(1.1) translateY(-8px);
-            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.9);
-            border: 3px solid #FFD700;
-            z-index: 10;
+            transform: scale(1.1) translateY(-10px);
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 1);
+            border: 4px solid #FFD700;
+            z-index: 100;
         }
 
         .card.unavailable {
-            opacity: 0.5;
+            opacity: 0.6;
             cursor: not-allowed;
-            filter: grayscale(50%);
+            filter: grayscale(30%) brightness(0.7);
         }
 
         .card.removed {
@@ -147,53 +206,59 @@
             pointer-events: none;
         }
 
-        .card.available::after {
-            content: '●';
-            position: absolute;
-            top: 3px;
-            right: 3px;
-            color: #00ff00;
-            font-size: 1.2em;
-            text-shadow: 0 0 5px rgba(0,255,0,0.9);
+        .card.available {
+            border-color: #00FF00;
+            box-shadow: 0 0 15px rgba(0,255,0,0.6);
         }
 
         /* Bottom Controls */
         .bottom-controls {
             display: flex;
-            gap: 15px;
+            gap: 20px;
             justify-content: center;
             align-items: center;
+            margin-top: 10px;
         }
 
         .deck-area {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
         }
 
         .cards-left-label {
-            font-size: 0.9em;
+            font-size: 1.2em;
             font-weight: bold;
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            color: #000080;
+            text-shadow: 
+                -1px -1px 0 #fff,
+                1px -1px 0 #fff,
+                -1px 1px 0 #fff,
+                1px 1px 0 #fff,
+                2px 2px 4px rgba(0,0,0,0.3);
+            background: rgba(255,255,255,0.8);
+            padding: 5px 15px;
+            border-radius: 10px;
+            border: 2px solid #000080;
         }
 
         .deck-and-drawn {
             display: flex;
-            gap: 15px;
+            gap: 20px;
             align-items: center;
         }
 
         .deck-card, .drawn-card {
-            width: 60px;
-            height: 84px;
-            border-radius: 6px;
+            width: 70px;
+            height: 98px;
+            border-radius: 8px;
             cursor: pointer;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             background-size: cover;
             background-position: center;
             transition: all 0.2s;
+            border: 3px solid #1E90FF;
         }
 
         .deck-card:active, .drawn-card:active {
@@ -201,54 +266,57 @@
         }
 
         .drawn-card.selected {
-            transform: scale(1.1) translateY(-8px);
-            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.9);
-            border: 3px solid #FFD700;
+            transform: scale(1.1) translateY(-10px);
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 1);
+            border: 4px solid #FFD700;
         }
 
         .drawn-card.empty {
-            background: rgba(255,255,255,0.3);
-            border: 2px dashed rgba(0,0,0,0.3);
+            background: rgba(255,255,255,0.5);
+            border: 3px dashed rgba(0,0,0,0.4);
             cursor: default;
         }
 
         /* Bonus Panel */
         .bonus-panel {
             background: linear-gradient(to bottom, #FFD700 0%, #FFA500 100%);
-            border-radius: 10px;
-            padding: 10px;
-            width: 80px;
+            border-radius: 15px;
+            border: 3px solid #333;
+            padding: 15px;
+            width: 100px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
         }
 
         .bonus-title {
-            font-size: 0.8em;
+            font-size: 1em;
             font-weight: bold;
-            color: #333;
-            margin-bottom: 10px;
+            color: #000;
+            margin-bottom: 15px;
             text-align: center;
+            text-shadow: none;
         }
 
         .bonus-cards-container {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 15px;
             align-items: center;
             flex: 1;
         }
 
         .bonus-card {
-            width: 55px;
-            height: 77px;
-            border-radius: 6px;
+            width: 65px;
+            height: 91px;
+            border-radius: 8px;
             cursor: pointer;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             background-size: cover;
             background-position: center;
             transition: all 0.2s;
+            border: 3px solid #1E90FF;
             animation: bonusAppear 0.5s;
         }
 
@@ -258,8 +326,8 @@
 
         .bonus-card.selected {
             transform: scale(1.1);
-            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.9);
-            border: 3px solid #FFD700;
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 1);
+            border: 4px solid #FFD700;
         }
 
         @keyframes bonusAppear {
@@ -293,18 +361,19 @@
 
         .message-box {
             background: white;
-            padding: 30px;
+            padding: 40px;
             border-radius: 20px;
+            border: 4px solid #333;
             text-align: center;
             box-shadow: 0 10px 40px rgba(0,0,0,0.5);
             max-width: 90%;
         }
 
         .message-box h2 {
-            font-size: 2em;
-            margin-bottom: 15px;
+            font-size: 2.5em;
+            margin-bottom: 20px;
             color: #FFD700;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
         }
 
         .message-box.game-over h2 {
@@ -312,21 +381,22 @@
         }
 
         .message-box p {
-            font-size: 1.2em;
-            margin: 10px 0;
+            font-size: 1.3em;
+            margin: 15px 0;
+            color: #000;
         }
 
         .btn {
-            padding: 15px 30px;
-            font-size: 1.2em;
+            padding: 15px 40px;
+            font-size: 1.3em;
             font-weight: bold;
-            border: none;
+            border: 3px solid #333;
             border-radius: 12px;
             cursor: pointer;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            margin: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            margin: 15px;
         }
 
         .btn:active {
@@ -339,11 +409,12 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: white;
-            padding: 20px 40px;
+            padding: 25px 50px;
             border-radius: 15px;
-            font-size: 1.5em;
+            border: 3px solid #333;
+            font-size: 1.8em;
             font-weight: bold;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
             z-index: 2000;
             animation: popIn 0.3s;
             pointer-events: none;
@@ -363,65 +434,74 @@
             }
         }
 
-        .notification.success {
-            border-left: 8px solid #00ff00;
-            color: #00aa00;
-        }
-
-        .notification.error {
-            border-left: 8px solid #ff0000;
-            color: #cc0000;
-        }
-
         .notification.bonus {
             background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
             color: white;
-            border: none;
+            border: 3px solid #333;
         }
 
         /* Mobile Optimization */
         @media (max-width: 768px) {
             .card, .deck-card, .drawn-card {
+                width: 55px;
+                height: 77px;
+            }
+
+            .bonus-card {
                 width: 50px;
                 height: 70px;
             }
 
-            .bonus-card {
-                width: 45px;
-                height: 63px;
+            .pyramids-container {
+                height: 300px;
             }
 
-            .stat-value {
-                font-size: 1.1em;
+            .pyramid-row {
+                margin-bottom: -25px;
+            }
+
+            .card {
+                margin: 0 -10px;
             }
         }
 
         @media (max-width: 480px) {
             .card, .deck-card, .drawn-card {
-                width: 42px;
-                height: 59px;
+                width: 45px;
+                height: 63px;
             }
 
             .bonus-card {
-                width: 38px;
-                height: 53px;
-            }
-
-            .stat-label {
-                font-size: 0.6em;
-            }
-
-            .stat-value {
-                font-size: 1em;
+                width: 40px;
+                height: 56px;
             }
 
             .pyramids-container {
-                gap: 5px;
+                height: 250px;
+            }
+
+            .pyramid-row {
+                margin-bottom: -20px;
+            }
+
+            .card {
+                margin: 0 -8px;
+            }
+
+            .stat-label {
+                font-size: 0.7em;
+            }
+
+            .stat-value {
+                font-size: 1.2em;
             }
         }
     </style>
 </head>
 <body>
+    <div class="tree-left"></div>
+    <div class="tree-right"></div>
+
     <div class="game-container">
         <!-- Top Bar -->
         <div class="top-bar">
@@ -437,13 +517,17 @@
                 <div class="stat-label">LEVEL</div>
                 <div class="stat-value" id="level">1</div>
             </div>
+            <div class="stat-box">
+                <div class="stat-label">W</div>
+                <div class="stat-value" id="w">0</div>
+            </div>
         </div>
 
         <!-- Main Play Area -->
         <div class="play-area">
             <!-- Game Board -->
             <div class="game-board">
-                <!-- Three Pyramids -->
+                <!-- Three Pyramids with overlap -->
                 <div class="pyramids-container" id="pyramidsContainer"></div>
                 
                 <!-- Deck Area -->
