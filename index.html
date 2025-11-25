@@ -143,27 +143,28 @@
 
         /* Left pyramid - positioned lower, overlaps with middle */
         .pyramid.left {
-            top: 60px;
-            left: 15%; /* Moved from 5% to 15% to bring closer */
+            top: 80px;
+            left: 10%;
         }
 
         /* Right pyramid - positioned lower, overlaps with middle */
         .pyramid.right {
-            top: 60px;
-            right: 15%; /* Moved from 5% to 15% to bring closer */
+            top: 80px;
+            right: 10%;
         }
 
         .pyramid-row {
             position: relative;
             display: flex;
             justify-content: center;
-            margin-bottom: -25px; /* Reduced overlap from -35px to -25px */
+            gap: 0; /* No gap between cards horizontally */
+            margin-bottom: -40px; /* Increased vertical overlap */
         }
 
         /* Cards - overlapping style */
         .card {
-            width: 70px;
-            height: 98px;
+            width: 90px;
+            height: 126px;
             cursor: pointer;
             transition: all 0.2s;
             border-radius: 8px;
@@ -171,7 +172,7 @@
             background-size: cover;
             background-position: center;
             position: relative;
-            margin: 0 -8px; /* Reduced overlap from -15px to -8px */
+            margin: 0 0; /* No horizontal overlap */
             border: 3px solid #1E90FF;
         }
 
@@ -188,10 +189,10 @@
         }
 
         .card.selected {
-            transform: translateY(-5px);
-            box-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 40px rgba(255, 215, 0, 0.7);
+            transform: none;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 40px rgba(255, 215, 0, 0.7), 0 4px 10px rgba(0,0,0,0.5);
             border: 3px solid #FFD700;
-            background-color: rgba(255, 215, 0, 0.15);
+            background-color: rgba(255, 215, 0, 0.2);
             z-index: 100;
         }
 
@@ -251,8 +252,8 @@
         }
 
         .deck-card, .drawn-card {
-            width: 70px;
-            height: 98px;
+            width: 90px;
+            height: 126px;
             border-radius: 8px;
             cursor: pointer;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
@@ -267,10 +268,10 @@
         }
 
         .drawn-card.selected {
-            transform: translateY(-5px);
-            box-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 40px rgba(255, 215, 0, 0.7);
+            transform: none;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 40px rgba(255, 215, 0, 0.7), 0 4px 10px rgba(0,0,0,0.5);
             border: 3px solid #FFD700;
-            background-color: rgba(255, 215, 0, 0.15);
+            background-color: rgba(255, 215, 0, 0.2);
         }
 
         .drawn-card.empty {
@@ -310,8 +311,8 @@
         }
 
         .bonus-card {
-            width: 65px;
-            height: 91px;
+            width: 85px;
+            height: 119px;
             border-radius: 8px;
             cursor: pointer;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
@@ -327,10 +328,10 @@
         }
 
         .bonus-card.selected {
-            transform: translateY(-3px);
-            box-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 40px rgba(255, 215, 0, 0.7);
+            transform: none;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 40px rgba(255, 215, 0, 0.7), 0 4px 10px rgba(0,0,0,0.5);
             border: 3px solid #FFD700;
-            background-color: rgba(255, 215, 0, 0.15);
+            background-color: rgba(255, 215, 0, 0.2);
         }
 
         @keyframes bonusAppear {
@@ -446,13 +447,13 @@
         /* Mobile Optimization */
         @media (max-width: 768px) {
             .card, .deck-card, .drawn-card {
-                width: 55px;
-                height: 77px;
+                width: 70px;
+                height: 98px;
             }
 
             .bonus-card {
-                width: 50px;
-                height: 70px;
+                width: 65px;
+                height: 91px;
             }
 
             .pyramids-container {
@@ -460,23 +461,20 @@
             }
 
             .pyramid-row {
-                margin-bottom: -25px;
-            }
-
-            .card {
-                margin: 0 -10px;
+                margin-bottom: -32px;
+                gap: 0;
             }
         }
 
         @media (max-width: 480px) {
             .card, .deck-card, .drawn-card {
-                width: 45px;
-                height: 63px;
+                width: 60px;
+                height: 84px;
             }
 
             .bonus-card {
-                width: 40px;
-                height: 56px;
+                width: 55px;
+                height: 77px;
             }
 
             .pyramids-container {
@@ -484,11 +482,8 @@
             }
 
             .pyramid-row {
-                margin-bottom: -20px;
-            }
-
-            .card {
-                margin: 0 -8px;
+                margin-bottom: -28px;
+                gap: 0;
             }
 
             .stat-label {
