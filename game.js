@@ -156,11 +156,24 @@ function setupPyramids() {
 
 // Check if middle row 1 should be unlocked
 function isMiddleRow1Unlocked() {
-    // Unlocks when innermost card from left OR right 3-row is cleared
+    // Check which cards in left and right pyramids row 2 are removed
     const leftInner = gameState.leftPyramid[2][2]; // rightmost of left 3-row
     const rightInner = gameState.rightPyramid[2][0]; // leftmost of right 3-row
     
-    return leftInner.removed || rightInner.removed;
+    return { leftUnlocked: leftInner.removed, rightUnlocked: rightInner.removed };
+}
+
+function unlockMiddleCards() {
+    const { leftUnlocked, rightUnlocked } = isMiddleRow1Unlocked();
+    const middleRow1 = gameState.middlePyramid[1];
+    
+    if (leftUnlocked) {
+        middleRow1[0].locked = false; // Unlock left card in middle row 1
+    }
+    
+    if (rightUnlocked) {
+        middleRow1[1].locked = false; // Unlock right card in middle row 1
+    }
 }
 
 // Check if a card is available (all covering cards removed)
@@ -169,9 +182,7 @@ function isCardAvailable(pyramid, card) {
     
     // Middle pyramid row 1 special case
     if (card.pyramid === 'middle' && card.row === 1 && card.locked) {
-        if (!isMiddleRow1Unlocked()) return false;
-        // Unlock the cards
-        card.locked = false;
+        return false; // Card remains locked until unlocked by specific cards
     }
     
     // Check if all covering cards are removed
@@ -186,11 +197,8 @@ function isCardAvailable(pyramid, card) {
 }
 
 function updateAvailability() {
-    // Check middle unlock first
-    const middleUnlocked = isMiddleRow1Unlocked();
-    if (middleUnlocked) {
-        gameState.middlePyramid[1].forEach(card => card.locked = false);
-    }
+    // Unlock middle cards based on which outer cards are removed
+    unlockMiddleCards();
     
     // Update left pyramid
     gameState.leftPyramid.forEach(row => {
@@ -366,6 +374,7 @@ function removeSelected() {
         updateStats();
         
         checkWinCondition();
+        checkMovesAvailable(); // Check if game is over after removing cards
     }
 }
 
@@ -427,31 +436,21 @@ function findEmptySpot() {
     // Filter for spots that don't cover any cards
     const uncoveringSpots = emptySpots.filter(spot => !coversAnyCard(spot));
     
-    // If we have uncovering spots, return the topmost one (highest priority = lowest row)
+    // If we have uncovering spots, pick random one from topmost row
     if (uncoveringSpots.length > 0) {
-        // Sort by row (ascending), then by pyramid order, then by col
-        uncoveringSpots.sort((a, b) => {
-            if (a.row !== b.row) return a.row - b.row;
-            const pyramidOrder = {left: 0, middle: 1, right: 2};
-            if (pyramidOrder[a.pyramid] !== pyramidOrder[b.pyramid]) {
-                return pyramidOrder[a.pyramid] - pyramidOrder[b.pyramid];
-            }
-            return a.col - b.col;
-        });
-        return uncoveringSpots[0];
+        // Find the topmost row with empty uncovering spots
+        const topRow = Math.min(...uncoveringSpots.map(s => s.row));
+        const topRowSpots = uncoveringSpots.filter(s => s.row === topRow);
+        
+        // Return random spot from topmost row
+        return topRowSpots[Math.floor(Math.random() * topRowSpots.length)];
     }
     
-    // Otherwise, return the topmost covering spot as fallback
-    emptySpots.sort((a, b) => {
-        if (a.row !== b.row) return a.row - b.row;
-        const pyramidOrder = {left: 0, middle: 1, right: 2};
-        if (pyramidOrder[a.pyramid] !== pyramidOrder[b.pyramid]) {
-            return pyramidOrder[a.pyramid] - pyramidOrder[b.pyramid];
-        }
-        return a.col - b.col;
-    });
+    // Otherwise, pick random covering spot from topmost row
+    const topRow = Math.min(...emptySpots.map(s => s.row));
+    const topRowSpots = emptySpots.filter(s => s.row === topRow);
     
-    return emptySpots[0];
+    return topRowSpots[Math.floor(Math.random() * topRowSpots.length)];
 }
 
 function coversAnyCard(emptySpot) {
@@ -590,8 +589,10 @@ function hasCombination(cards, target, size) {
 }
 
 function checkMovesAvailable() {
-    if (!hasMovesAvailable() && gameState.deck.length === 0) {
-        setTimeout(() => endGame(false, 'No more moves!'), 500);
+    if (!gameState.gameOver && !hasMovesAvailable()) {
+        if (gameState.deck.length === 0) {
+            setTimeout(() => endGame(false, 'No more moves!'), 500);
+        }
     }
 }
 
