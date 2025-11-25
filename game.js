@@ -413,49 +413,70 @@ function drawCard() {
 }
 
 function findEmptySpot() {
-    // Scan from top row to bottom row
-    // Within each row, scan left pyramid, then middle, then right
-    // Within each pyramid, scan left to right
+    // Scan by row from top (0) to bottom
+    // Within each row, check Left pyramid, then Middle pyramid, then Right pyramid
+    // Within each pyramid, scan left to right (col 0, 1, 2, ...)
     
-    const pyramids = [
-        {name: 'left', pyramid: gameState.leftPyramid},
-        {name: 'middle', pyramid: gameState.middlePyramid},
-        {name: 'right', pyramid: gameState.rightPyramid}
-    ];
+    const maxRows = 5; // Maximum rows in any pyramid
     
-    // Find the maximum row number across all pyramids
-    const maxRow = Math.max(
-        gameState.leftPyramid.length,
-        gameState.middlePyramid.length,
-        gameState.rightPyramid.length
-    ) - 1;
-    
-    // Scan from top row to bottom
-    for (let row = 0; row <= maxRow; row++) {
-        // Within each row, scan left pyramid, middle, right
-        for (let p of pyramids) {
-            if (p.pyramid[row]) {
-                // Scan columns left to right
-                for (let col = 0; col < p.pyramid[row].length; col++) {
-                    if (p.pyramid[row][col].removed) {
-                        // Prefer spots that don't cover other cards
-                        if (!coversAnyCard({pyramid: p.name, row, col})) {
-                            return {pyramid: p.name, row, col};
-                        }
-                    }
+    // First pass: prefer non-covering spots
+    for (let row = 0; row < maxRows; row++) {
+        // Check Left pyramid at this row
+        if (gameState.leftPyramid[row]) {
+            for (let col = 0; col < gameState.leftPyramid[row].length; col++) {
+                const card = gameState.leftPyramid[row][col];
+                if (card.removed && !coversAnyCard({pyramid: 'left', row, col})) {
+                    return {pyramid: 'left', row, col};
+                }
+            }
+        }
+        
+        // Check Middle pyramid at this row
+        if (gameState.middlePyramid[row]) {
+            for (let col = 0; col < gameState.middlePyramid[row].length; col++) {
+                const card = gameState.middlePyramid[row][col];
+                if (card.removed && !coversAnyCard({pyramid: 'middle', row, col})) {
+                    return {pyramid: 'middle', row, col};
+                }
+            }
+        }
+        
+        // Check Right pyramid at this row
+        if (gameState.rightPyramid[row]) {
+            for (let col = 0; col < gameState.rightPyramid[row].length; col++) {
+                const card = gameState.rightPyramid[row][col];
+                if (card.removed && !coversAnyCard({pyramid: 'right', row, col})) {
+                    return {pyramid: 'right', row, col};
                 }
             }
         }
     }
     
-    // If no non-covering spots found, scan again for covering spots
-    for (let row = 0; row <= maxRow; row++) {
-        for (let p of pyramids) {
-            if (p.pyramid[row]) {
-                for (let col = 0; col < p.pyramid[row].length; col++) {
-                    if (p.pyramid[row][col].removed) {
-                        return {pyramid: p.name, row, col};
-                    }
+    // Second pass: if no non-covering spots, use any covering spot
+    for (let row = 0; row < maxRows; row++) {
+        // Check Left pyramid at this row
+        if (gameState.leftPyramid[row]) {
+            for (let col = 0; col < gameState.leftPyramid[row].length; col++) {
+                if (gameState.leftPyramid[row][col].removed) {
+                    return {pyramid: 'left', row, col};
+                }
+            }
+        }
+        
+        // Check Middle pyramid at this row
+        if (gameState.middlePyramid[row]) {
+            for (let col = 0; col < gameState.middlePyramid[row].length; col++) {
+                if (gameState.middlePyramid[row][col].removed) {
+                    return {pyramid: 'middle', row, col};
+                }
+            }
+        }
+        
+        // Check Right pyramid at this row
+        if (gameState.rightPyramid[row]) {
+            for (let col = 0; col < gameState.rightPyramid[row].length; col++) {
+                if (gameState.rightPyramid[row][col].removed) {
+                    return {pyramid: 'right', row, col};
                 }
             }
         }
