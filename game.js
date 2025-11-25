@@ -413,44 +413,55 @@ function drawCard() {
 }
 
 function findEmptySpot() {
-    // Get all empty spots
-    const emptySpots = [];
+    // Scan from top row to bottom row
+    // Within each row, scan left pyramid, then middle, then right
+    // Within each pyramid, scan left to right
+    
     const pyramids = [
         {name: 'left', pyramid: gameState.leftPyramid},
         {name: 'middle', pyramid: gameState.middlePyramid},
         {name: 'right', pyramid: gameState.rightPyramid}
     ];
     
-    for (let p of pyramids) {
-        for (let row = 0; row < p.pyramid.length; row++) {
-            for (let col = 0; col < p.pyramid[row].length; col++) {
-                if (p.pyramid[row][col].removed) {
-                    emptySpots.push({pyramid: p.name, row, col});
+    // Find the maximum row number across all pyramids
+    const maxRow = Math.max(
+        gameState.leftPyramid.length,
+        gameState.middlePyramid.length,
+        gameState.rightPyramid.length
+    ) - 1;
+    
+    // Scan from top row to bottom
+    for (let row = 0; row <= maxRow; row++) {
+        // Within each row, scan left pyramid, middle, right
+        for (let p of pyramids) {
+            if (p.pyramid[row]) {
+                // Scan columns left to right
+                for (let col = 0; col < p.pyramid[row].length; col++) {
+                    if (p.pyramid[row][col].removed) {
+                        // Prefer spots that don't cover other cards
+                        if (!coversAnyCard({pyramid: p.name, row, col})) {
+                            return {pyramid: p.name, row, col};
+                        }
+                    }
                 }
             }
         }
     }
     
-    if (emptySpots.length === 0) return null;
-    
-    // Filter for spots that don't cover any cards
-    const uncoveringSpots = emptySpots.filter(spot => !coversAnyCard(spot));
-    
-    // If we have uncovering spots, pick random one from topmost row
-    if (uncoveringSpots.length > 0) {
-        // Find the topmost row with empty uncovering spots
-        const topRow = Math.min(...uncoveringSpots.map(s => s.row));
-        const topRowSpots = uncoveringSpots.filter(s => s.row === topRow);
-        
-        // Return random spot from topmost row
-        return topRowSpots[Math.floor(Math.random() * topRowSpots.length)];
+    // If no non-covering spots found, scan again for covering spots
+    for (let row = 0; row <= maxRow; row++) {
+        for (let p of pyramids) {
+            if (p.pyramid[row]) {
+                for (let col = 0; col < p.pyramid[row].length; col++) {
+                    if (p.pyramid[row][col].removed) {
+                        return {pyramid: p.name, row, col};
+                    }
+                }
+            }
+        }
     }
     
-    // Otherwise, pick random covering spot from topmost row
-    const topRow = Math.min(...emptySpots.map(s => s.row));
-    const topRowSpots = emptySpots.filter(s => s.row === topRow);
-    
-    return topRowSpots[Math.floor(Math.random() * topRowSpots.length)];
+    return null;
 }
 
 function coversAnyCard(emptySpot) {
